@@ -2,7 +2,6 @@ config {
     module = true
     force = false
     disabled_by_default = false
-    varfile = ["example1.tfvars", "example2.tfvars"]
 }
  
 plugin "aws" {
