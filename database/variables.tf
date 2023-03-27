@@ -1,4 +1,5 @@
-variable "db_password" {
-  description = "The password for the database"
-  type        = string
+variable "name_tag" {
+	type        = string
+	description = "Name of the RDS instance"
+	default     = "CIaCT RDS Instance"
 }

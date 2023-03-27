@@ -19,22 +19,60 @@ terraform {
 # ------------------------------------------------------------------------------
 
 provider "aws" {
-  region = "us-east-2"
+  region     = "ap-south-1"
+  access_key = "your-access-key"
+  secret_key = "your-secret-key"
+}
+
+
+# ------------------------------------------------------------------------------
+# DEPLOY SECURITY GROUP
+# ------------------------------------------------------------------------------
+
+resource "aws_security_group" "iac-db-sg" {
+  name = "IaCDBSecGrp"
+  description = "IaC DB Security Group 3306"
+
+  // To Allow MySQL access
+  ingress {
+    from_port = 3306
+    protocol = "tcp"
+    to_port = 3306
+    cidr_blocks = ["0.0.0.0/0"]
+  } 
+  
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ------------------------------------------------------------------------------
 # DEPLOY MYSQL ON RDS
 # ------------------------------------------------------------------------------
 
-resource "aws_db_instance" "example" {
-  identifier_prefix = "terraform-up-and-running"
-  engine            = "mysql"
-  allocated_storage = 10
-  instance_class    = "db.t2.micro"
-  name              = "example_database"
-  username          = "admin"
-  password          = var.db_password
-
-  # Don't copy this to your production examples. It's only here to make it quicker to delete this DB.
-  skip_final_snapshot = true
+resource "aws_db_instance" "rds_instance" {
+  allocated_storage = 20
+  identifier = "iacrds"
+  storage_type = "gp2"
+  engine = "mysql"
+  engine_version = "5.7.41"
+  instance_class = "db.t2.micro"
+  name = "shop_inventory"
+  username = "admin"
+  password = "admin123"
+  publicly_accessible    = true
+  skip_final_snapshot    = true
+  
+  vpc_security_group_ids = ["${aws_security_group.iac-db-sg.id}"] 
+  
+  tags = {
+    Name = var.name_tag
+  }
 }
